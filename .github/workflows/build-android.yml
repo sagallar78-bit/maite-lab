@@ -31,4 +31,6 @@ jobs:
       - name: Compilar Android
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas build --platform android --profile preview --non-interactive
+        run: |
+          npx expo config --json
+          eas build --platform android --profile preview --non-interactive
