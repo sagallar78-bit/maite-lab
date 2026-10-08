@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: maite-lab-android
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Generar APK
@@ -25,7 +29,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar y sincronizar dependencias
+      - name: Sincronizar dependencias
         env:
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: |
