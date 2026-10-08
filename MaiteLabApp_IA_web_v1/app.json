@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Maite Lab",
+    "slug": "maite-lab",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "maitelab",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maitelab.app",
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Maite Lab necesita guardar tus carruseles en Fotos.",
+        "NSPhotoLibraryUsageDescription": "Maite Lab necesita acceso a Fotos para guardar contenido creado por ti."
+      }
+    },
+    "android": {
+      "package": "com.maitelab.app",
+      "permissions": [
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-media-library",
+      "expo-sharing"
+    ],
+    "extra": {
+      "apiBaseUrl": "https://REEMPLAZAR-CON-LA-URL-DE-TU-API"
+    }
+  }
+}
