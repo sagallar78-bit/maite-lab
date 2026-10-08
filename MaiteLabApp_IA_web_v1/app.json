@@ -25,7 +25,6 @@
     "plugins": [
       "expo-router",
       "expo-media-library",
-      "expo-sharing"
     ],
     "extra": {
       "apiBaseUrl": "https://REEMPLAZAR-CON-LA-URL-DE-TU-API",
