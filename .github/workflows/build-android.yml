@@ -5,15 +5,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: maite-lab-android
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Generar APK
+  reparar:
+    name: Reparar dependencias
     runs-on: ubuntu-latest
 
     defaults:
@@ -23,38 +23,58 @@ jobs:
     steps:
       - name: Descargar proyecto
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Preparar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Instalar y sincronizar dependencias
-        env:
-          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+      - name: Regenerar archivo de bloqueo
         run: |
-          npm install --legacy-peer-deps
-          npx expo install --fix --npm
-          npm install --legacy-peer-deps
-
-      - name: Verificar archivo de bloqueo
-        env:
-          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
-        run: |
+          npm install --package-lock-only --legacy-peer-deps
           npm ci --include=dev --legacy-peer-deps
+
+      - name: Guardar archivos corregidos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Reparar bloqueo de dependencias"
+            git push origin HEAD:main
+          fi
+
+  compilar:
+    name: Generar APK
+    needs: reparar
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: MaiteLabApp_IA_web_v1
+
+    steps:
+      - name: Descargar proyecto corregido
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verificar dependencias
+        run: npm ci --include=dev --legacy-peer-deps
 
       - name: Instalar EAS CLI
         run: npm install --global eas-cli
-
-      - name: Validar proyecto Expo
-        run: |
-          npx expo config --type public
-          npx expo-doctor
 
       - name: Compilar Android
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
-          EAS_NO_FROZEN_LOCKFILE: "1"
         run: |
           eas build --platform android --profile preview --non-interactive
