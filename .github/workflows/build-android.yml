@@ -27,7 +27,7 @@ jobs:
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: |
           npm install --legacy-peer-deps
-          npx expo install expo-font expo-constants expo-linking --npm
+          npx expo install --fix --npm
           npm install --legacy-peer-deps
 
       - name: Instalar EAS CLI
