@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "maitelab",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.maitelab.app",
