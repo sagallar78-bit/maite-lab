@@ -23,7 +23,10 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: npm install --legacy-peer-deps
+        run: |
+          npm install --legacy-peer-deps
+          npx expo install --fix --npm
+          npm install --legacy-peer-deps
 
       - name: Instalar EAS CLI
         run: npm install --global eas-cli
