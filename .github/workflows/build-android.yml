@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: maite-lab-android
@@ -29,32 +29,19 @@ jobs:
         with:
           node-version: '20'
 
-      
-      - name: Sincronizar dependencias
+      - name: Instalar y sincronizar dependencias
         env:
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: |
           npm install --legacy-peer-deps
           npx expo install --fix --npm
           npm install --legacy-peer-deps
-          npm ci --include=dev --legacy-peer-deps
-
 
       - name: Verificar archivo de bloqueo
         env:
           NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: |
           npm ci --include=dev --legacy-peer-deps
-
-      - name: Guardar dependencias actualizadas
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          if ! git diff --cached --quiet; then
-            git commit -m "Sincronizar dependencias Expo"
-            git push origin HEAD:main
-          fi
 
       - name: Instalar EAS CLI
         run: npm install --global eas-cli
@@ -64,11 +51,10 @@ jobs:
           npx expo config --type public
           npx expo-doctor
 
-      
       - name: Compilar Android
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
           EAS_NO_FROZEN_LOCKFILE: "1"
         run: |
           eas build --platform android --profile preview --non-interactive
-
