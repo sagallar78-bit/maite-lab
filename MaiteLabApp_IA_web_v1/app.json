@@ -26,7 +26,7 @@
       "expo-media-library",
     ],
     "extra": {
-      "apiBaseUrl": "https://REEMPLAZAR-CON-LA-URL-DE-TU-API",
+      "apiBaseUrl": "https://maite-lab.onrender.com",
       "eas": {
         "projectId": "ae04022c-4681-4b3f-a23d-0b1297b0e915"
      }
