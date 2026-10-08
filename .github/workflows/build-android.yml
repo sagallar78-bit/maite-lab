@@ -64,8 +64,11 @@ jobs:
           npx expo config --type public
           npx expo-doctor
 
+      
       - name: Compilar Android
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_NO_FROZEN_LOCKFILE: "1"
         run: |
           eas build --platform android --profile preview --non-interactive
+
