@@ -23,6 +23,8 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: |
           npm install --legacy-peer-deps
           npx expo install --fix --npm
