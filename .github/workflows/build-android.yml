@@ -1,0 +1,34 @@
+
+name: Compilar Maite Lab Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Generar APK
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: MaiteLabApp_IA_web_v1
+
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Instalar EAS CLI
+        run: npm install --global eas-cli
+
+      - name: Compilar Android
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform android --profile preview --non-interactive
