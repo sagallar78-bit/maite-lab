@@ -1,156 +1,212 @@
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import OpenAI from 'openai';
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 const PORT = Number(process.env.PORT || 3000);
-const MODEL = process.env.OPENAI_MODEL || 'gpt-6-luna';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 const instructions = `
-Eres MAITE LAB, investigador y editor educativo para estudiantes de aproximadamente 15 años.
+Eres MAITE LAB, investigador y editor educativo para estudiantes
+de aproximadamente 15 años.
 
-OBJETIVO
-Investiga el tema solicitado y conviértelo en un carrusel educativo para Instagram, entretenido pero rigurosamente factual.
+Investiga el tema solicitado y conviértelo en un carrusel educativo
+para Instagram, entretenido pero rigurosamente factual.
 
-INVESTIGACIÓN
-- Usa web search antes de redactar.
-- Prioriza fuentes primarias, universidades, organismos públicos, museos científicos y publicaciones académicas.
-- Contrasta afirmaciones importantes cuando exista riesgo de error o exageración.
-- No inventes hechos, cifras, nombres, fechas, estudios ni URLs.
-- Si una afirmación popular es engañosa o simplifica demasiado el fenómeno, acláralo.
-- Si existe incertidumbre científica o debate, dilo de forma sencilla.
-- Las fuentes deben corresponder a páginas realmente consultadas durante la investigación.
-
-ESTILO
-- Español claro y natural.
-- Adecuado para una persona de 15 años.
-- Frases cortas y visuales.
-- Evita lenguaje académico innecesario.
-- El primer slide debe tener un gancho fuerte.
-- Genera entre 5 y 7 slides.
-- Máximo aproximado de 55 palabras por slide.
-- El último slide debe dejar una idea o pregunta memorable.
-- "Viral" nunca justifica exagerar.
-
-FORMATO
-Devuelve exclusivamente el objeto que cumpla el esquema solicitado.
+REGLAS
+- Investiga mediante Google Search antes de redactar.
+- Prioriza universidades, organismos públicos y fuentes científicas.
+- No inventes datos, fechas, estudios ni URLs.
+- Explica la incertidumbre cuando corresponda.
+- Utiliza español claro, natural y entretenido.
+- Genera entre 5 y 7 láminas.
+- Cada lámina debe tener un máximo aproximado de 55 palabras.
+- El primer slide debe tener un gancho atractivo.
+- El último debe dejar una idea o pregunta memorable.
+- Devuelve exclusivamente JSON válido.
 `;
 
 const schema = {
-  type: "object",
-  additionalProperties: false,
+  type: 'object',
   properties: {
-    title: { type: "string" },
-    subtitle: { type: "string" },
-    wow: { type: "string" },
+    title: { type: 'string' },
+    subtitle: { type: 'string' },
+    wow: { type: 'string' },
     cards: {
-      type: "array",
-      minItems: 2,
-      maxItems: 4,
+      type: 'array',
       items: {
-        type: "object",
-        additionalProperties: false,
+        type: 'object',
         properties: {
-          title: { type: "string" },
-          text: { type: "string" }
+          title: { type: 'string' },
+          text: { type: 'string' }
         },
-        required: ["title", "text"]
+        required: ['title', 'text']
       }
     },
     slides: {
-      type: "array",
-      minItems: 5,
-      maxItems: 7,
+      type: 'array',
       items: {
-        type: "object",
-        additionalProperties: false,
+        type: 'object',
         properties: {
-          hook: { type: "string" },
-          title: { type: "string" },
-          text: { type: "string" }
+          hook: { type: 'string' },
+          title: { type: 'string' },
+          text: { type: 'string' }
         },
-        required: ["hook", "title", "text"]
+        required: ['hook', 'title', 'text']
       }
     },
     sources: {
-      type: "array",
-      minItems: 1,
-      maxItems: 12,
+      type: 'array',
       items: {
-        type: "object",
-        additionalProperties: false,
+        type: 'object',
         properties: {
-          title: { type: "string" },
-          url: { type: "string" }
+          title: { type: 'string' },
+          url: { type: 'string' }
         },
-        required: ["title", "url"]
+        required: ['title', 'url']
       }
     }
   },
-  required: ["title", "subtitle", "wow", "cards", "slides", "sources"]
+  required: ['title', 'subtitle', 'wow', 'cards', 'slides', 'sources']
 };
 
-app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "maite-lab-api", aiConfigured: Boolean(process.env.OPENAI_API_KEY) });
+app.get('/health', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'maite-lab-api',
+    provider: 'gemini',
+    aiConfigured: Boolean(process.env.GEMINI_API_KEY)
+  });
 });
 
-app.post("/api/generate", async (req, res) => {
+app.post('/api/generate', async (req, res) => {
   try {
-    const topic = String(req.body?.topic || "").trim();
+    const topic = String(req.body?.topic || '').trim();
 
     if (!topic) {
-      return res.status(400).json({ error: "Falta el tema." });
+      return res.status(400).json({ error: 'Falta el tema.' });
     }
 
     if (topic.length > 500) {
-      return res.status(400).json({ error: "El tema es demasiado largo." });
+      return res.status(400).json({
+        error: 'El tema es demasiado largo.'
+      });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(503).json({ error: "Servidor sin OPENAI_API_KEY." });
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(503).json({
+        error: 'Servidor sin GEMINI_API_KEY.'
+      });
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/` +
+      `${encodeURIComponent(MODEL)}:generateContent`;
 
-    const response = await client.responses.create({
-      model: MODEL,
-      instructions,
-      input: `Investiga y crea el contenido completo sobre este tema: ${topic}`,
-      tools: [{ type: "web_search", search_context_size: "high" }],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "maite_lab_carousel",
-          strict: true,
-          schema
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: instructions }]
+        },
+        contents: [{
+          role: 'user',
+          parts: [{
+            text:
+              `Investiga este tema: ${topic}. ` +
+              `Genera un carrusel educativo de 5 a 7 láminas. ` +
+              `Devuelve JSON que cumpla este esquema: ` +
+              JSON.stringify(schema)
+          }]
+        }],
+        tools: [{ google_search: {} }],
+        generationConfig: {
+          temperature: 0.5
         }
-      }
+      }),
+      signal: AbortSignal.timeout(90000)
     });
 
-    if (!response.output_text) {
-      throw new Error("La IA no devolvió contenido.");
+    const payload = await response.json();
+
+    if (!response.ok) {
+      console.error(
+        'Error Gemini:',
+        response.status,
+        JSON.stringify(payload).slice(0, 500)
+      );
+
+      return res.status(response.status === 429 ? 429 : 502).json({
+        error: response.status === 429
+          ? 'Se alcanzó el límite de uso de Gemini.'
+          : 'No se pudo consultar Gemini. Revisa el modelo y la clave.'
+      });
     }
 
-    const data = JSON.parse(response.output_text);
+    const candidate = payload.candidates?.[0];
 
-    // Normalización defensiva para que la app siempre reciba las estructuras esperadas.
-    data.cards = Array.isArray(data.cards) ? data.cards : [];
-    data.slides = Array.isArray(data.slides) ? data.slides.slice(0, 7) : [];
-    data.sources = Array.isArray(data.sources) ? data.sources : [];
+    const rawText = candidate?.content?.parts
+      ?.filter(part => typeof part.text === 'string')
+      .map(part => part.text)
+      .join('\n');
+
+    if (!rawText) {
+      throw new Error('Gemini no devolvió contenido.');
+    }
+
+    const cleanText = rawText
+      .trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/, '');
+
+    const data = JSON.parse(cleanText);
+
+    if (!Array.isArray(data.slides)) {
+      throw new Error('Respuesta sin láminas.');
+    }
+
+    data.cards = Array.isArray(data.cards)
+      ? data.cards.slice(0, 4)
+      : [];
+
+    data.slides = data.slides.slice(0, 7);
+
+    // Utilizar las referencias de búsqueda proporcionadas por Google.
+    const chunks =
+      candidate?.groundingMetadata?.groundingChunks || [];
+
+    const sources = chunks
+      .filter(chunk => chunk.web?.uri)
+      .map(chunk => ({
+        title: chunk.web.title || 'Fuente consultada',
+        url: chunk.web.uri
+      }));
+
+    data.sources = Array.from(
+      new Map(sources.map(source => [source.url, source])).values()
+    ).slice(0, 12);
 
     return res.json(data);
+
   } catch (error) {
-    console.error("MAITE LAB ERROR:", error);
+    console.error('MAITE LAB ERROR:', error);
+
     return res.status(500).json({
-      error: "No pude generar el contenido. Revisa la configuración del servidor de IA."
+      error: 'No pude generar el contenido. Revisa el servidor.'
     });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Maite Lab API activa en puerto ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Maite Lab Gemini activo en puerto ${PORT}`);
 });
