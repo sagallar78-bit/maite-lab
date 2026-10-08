@@ -32,5 +32,6 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          npx expo config --json
+          npx expo config --type public
+          npx expo-doctor
           eas build --platform android --profile preview --non-interactive
