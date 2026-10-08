@@ -28,9 +28,10 @@
       "expo-sharing"
     ],
     "extra": {
-  "apiBaseUrl": "https://REEMPLAZAR-CON-LA-URL-DE-TU-API",
-  "eas": {
-    "projectId": "ae04022c-4681-4b3f-a23d-0b1297b0e915"
-    }
-  }
+      "apiBaseUrl": "https://REEMPLAZAR-CON-LA-URL-DE-TU-API",
+      "eas": {
+        "projectId": "ae04022c-4681-4b3f-a23d-0b1297b0e915"
+     }
+   }
+ }
 }
