@@ -23,7 +23,7 @@ REGLAS
 - No inventes datos, fechas, estudios ni URLs.
 - Explica la incertidumbre cuando corresponda.
 - Utiliza español claro, natural y entretenido.
-- Genera entre 5 y 7 láminas.
+- Genera entre 2 y 3 láminas.
 - Cada lámina debe tener un máximo aproximado de 55 palabras.
 - El primer slide debe tener un gancho atractivo.
 - El último debe dejar una idea o pregunta memorable.
@@ -123,7 +123,7 @@ app.post('/api/generate', async (req, res) => {
           role: 'user',
           parts: [{
             text:
-              `Explica este tema: ${topic}. ` + +
+              `Explica este tema: ${topic}. ` + 
               `Genera un carrusel educativo de 2 a 3 láminas. ` +
               `Devuelve JSON que cumpla este esquema: ` +
               JSON.stringify(schema)
