@@ -18,7 +18,7 @@ Investiga el tema solicitado y conviértelo en un carrusel educativo
 para Instagram, entretenido pero rigurosamente factual.
 
 REGLAS
-- Investiga mediante Google Search antes de redactar.
+- Redacta utilizando conocimientos generales, sin búsqueda web. No inventes fuentes ni afirmes haber consultado Internet.
 - Prioriza universidades, organismos públicos y fuentes científicas.
 - No inventes datos, fechas, estudios ni URLs.
 - Explica la incertidumbre cuando corresponda.
@@ -129,7 +129,6 @@ app.post('/api/generate', async (req, res) => {
               JSON.stringify(schema)
           }]
         }],
-        tools: [{ google_search: {} }],
         generationConfig: {
           temperature: 0.5
         }
