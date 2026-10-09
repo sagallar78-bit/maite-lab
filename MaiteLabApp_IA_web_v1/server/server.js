@@ -123,8 +123,8 @@ app.post('/api/generate', async (req, res) => {
           role: 'user',
           parts: [{
             text:
-              `Investiga este tema: ${topic}. ` +
-              `Genera un carrusel educativo de 5 a 7 láminas. ` +
+              `Explica este tema: ${topic}. ` + +
+              `Genera un carrusel educativo de 2 a 3 láminas. ` +
               `Devuelve JSON que cumpla este esquema: ` +
               JSON.stringify(schema)
           }]
