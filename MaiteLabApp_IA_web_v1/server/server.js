@@ -180,7 +180,7 @@ app.post('/api/generate', async (req, res) => {
 
     data.slides = data.slides.slice(0, 7);
 
-    // Utilizar las referencias de búsqueda proporcionadas por Google.
+    // Sin búsqueda web, no se incluyen fuentes verificadas en tiempo real.
     const chunks =
       candidate?.groundingMetadata?.groundingChunks || [];
 
